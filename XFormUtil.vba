@@ -35,7 +35,7 @@ End Function
 ' Initializes a datasheet form and enforces Datasheet DefaultView
 Public Sub InitCustomDatasheetForm(ByVal frm As Form, Optional ByVal isModal As Boolean = False)
     AssertTrue frm.DefaultView = acDefViewDatasheet, _
-           "XFormUtil.InitCustomAccessForm", "The DefaultView of " & frm.name & " must be Datasheet Form."
+           "XFormUtil.InitCustomDatasheetForm", "The DefaultView of " & frm.name & " must be Datasheet Form."
     frm.Modal = isModal
     frm.AllowAdditions = False
     frm.AllowDeletions = False
@@ -53,7 +53,7 @@ Public Sub InitCustomAccessForm(ByVal frm As Form, Optional ByVal isModal As Boo
     frm.Modal = isModal
     frm.AllowAdditions = False
     frm.AllowDeletions = False
-    frm.AllowEdits = False
+    frm.AllowEdits = True
     frm.AllowFilters = False
     
     frm.NavigationButtons = False
