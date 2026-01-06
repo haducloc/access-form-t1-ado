@@ -30,7 +30,7 @@ Public Function GetConnection(ByRef cn As Object, Optional ByVal timeoutSeconds 
     If cn Is Nothing Then
         Set cn = CreateObject("ADODB.Connection")
         cn.ConnectionString = GetDbConString(timeoutSeconds)
-        cn.ConnectionTimeout = timeoutSeconds
+        ' cn.ConnectionTimeout = timeoutSeconds
     End If
 
     If cn.State = 0 Then cn.Open
