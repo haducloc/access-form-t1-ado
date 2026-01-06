@@ -27,14 +27,14 @@ Public Sub InsertReturnTrackingAdo(ByVal connAdo As Object, _
 
     ' Register parameters in the correct order for ? placeholders (type/Null handling matters)
     ParamInt4Ado cmd, "@applicantId", applicantId
-    ParamVarcharAdo cmd, "@soundex", 50, soundex
-    ParamVarcharAdo cmd, "@ctName", 50, ctName
+    ParamVarcharAdo cmd, "@soundex", soundex, 50
+    ParamVarcharAdo cmd, "@ctName", ctName, 50
     ParamBoolAdo cmd, "@internetSource", internetSource
     ParamDateAdo cmd, "@returnDate1", returnDate1
     ParamDateAdo cmd, "@returnDate2", returnDate2
     ParamDateAdo cmd, "@returnDate3", returnDate3
     ParamBoolAdo cmd, "@isCompleted", isCompleted
-    ParamVarcharAdo cmd, "@comments", 255, comments
+    ParamVarcharAdo cmd, "@comments", comments, 255
 
     ' Execute
     ExecuteUpdateAdo cmd
@@ -83,14 +83,14 @@ Public Sub UpdateReturnTrackingAdo(ByVal connAdo As Object, _
         "WHERE ApplicantID = ?")
 
     ' Register parameters in the correct order for ? placeholders (type/Null handling matters)
-    ParamVarcharAdo cmd, "@soundex", 50, soundex
-    ParamVarcharAdo cmd, "@ctName", 50, ctName
+    ParamVarcharAdo cmd, "@soundex", soundex, 50
+    ParamVarcharAdo cmd, "@ctName", ctName, 50
     ParamBoolAdo cmd, "@internetSource", internetSource
     ParamDateAdo cmd, "@returnDate1", returnDate1
     ParamDateAdo cmd, "@returnDate2", returnDate2
     ParamDateAdo cmd, "@returnDate3", returnDate3
     ParamBoolAdo cmd, "@isCompleted", isCompleted
-    ParamVarcharAdo cmd, "@comments", 255, comments
+    ParamVarcharAdo cmd, "@comments", comments, 255
     ParamInt4Ado cmd, "@applicantId", applicantId
 
     ' Execute
@@ -231,8 +231,8 @@ Public Sub SearchReturnTrackingAdo( _
         ' ctName column length is 50.
         ' For the ctName LIKE parameter, use a size greater than 50; 255 is sufficient.
         
-        ParamVarcharAdo cmd, "@p3", 255, ctNameLike
-        ParamVarcharAdo cmd, "@p4", 255, ctNameLike
+        ParamVarcharAdo cmd, "@p3", ctNameLike, 255
+        ParamVarcharAdo cmd, "@p4", ctNameLike, 255
     End If
 
     ' Execute Query

@@ -119,48 +119,47 @@ End Function
 
 ' Add SMALLINT parameter.
 Public Sub ParamInt2Ado(ByVal cmd As Object, ByVal name As String, ByVal value As Variant)
-    AddParam cmd, name, adSmallInt, 0, value
+    AddParam cmd, adSmallInt, name, value
 End Sub
 
 ' Add INT parameter.
 Public Sub ParamInt4Ado(ByVal cmd As Object, ByVal name As String, ByVal value As Variant)
-    AddParam cmd, name, adInteger, 0, value
+    AddParam cmd, adInteger, name, value
 End Sub
 
 ' Add BIGINT parameter.
 Public Sub ParamInt8Ado(ByVal cmd As Object, ByVal name As String, ByVal value As Variant)
-    AddParam cmd, name, adBigInt, 0, value
+    AddParam cmd, adBigInt, name, value
 End Sub
 
 ' Add BIT/Boolean parameter.
 Public Sub ParamBoolAdo(ByVal cmd As Object, ByVal name As String, ByVal value As Variant)
-    AddParam cmd, name, adBoolean, 0, value
+    AddParam cmd, adBoolean, name, value
 End Sub
 
 ' Add Single parameter.
 Public Sub ParamFloatAdo(ByVal cmd As Object, ByVal name As String, ByVal value As Variant)
-    AddParam cmd, name, adSingle, 0, value
+    AddParam cmd, adSingle, name, value
 End Sub
 
 ' Add Double parameter.
 Public Sub ParamDoubleAdo(ByVal cmd As Object, ByVal name As String, ByVal value As Variant)
-    AddParam cmd, name, adDouble, 0, value
+    AddParam cmd, adDouble, name, value
 End Sub
 
 ' Add Currency parameter.
 Public Sub ParamCurrencyAdo(ByVal cmd As Object, ByVal name As String, ByVal value As Variant)
-    AddParam cmd, name, adCurrency, 0, value
+    AddParam cmd, adCurrency, name, value
 End Sub
 
 ' Add DECIMAL/NUMERIC parameter.
 Public Sub ParamDecimalAdo(ByVal cmd As Object, ByVal name As String, ByVal value As Variant)
-    AddParam cmd, name, adNumeric, 0, value
+    AddParam cmd, adNumeric, name, value
 End Sub
 
 ' Add DECIMAL/NUMERIC parameter with precision & scale.
 Public Sub ParamDecimalPSAdo(ByVal cmd As Object, ByVal name As String, _
-                            ByVal precision As Byte, ByVal numScale As Byte, _
-                            ByVal value As Variant)
+                            ByVal value As Variant, ByVal precision As Byte, ByVal numScale As Byte)
     Dim p As Object
     Set p = cmd.CreateParameter(name, adNumeric, adParamInput)
 
@@ -178,66 +177,66 @@ End Sub
 
 ' Add GUID parameter.
 Public Sub ParamGuidAdo(ByVal cmd As Object, ByVal name As String, ByVal value As Variant)
-    AddParam cmd, name, adGUID, 0, value
+    AddParam cmd, adGUID, name, value
 End Sub
 
 ' Add CHAR(n) parameter.
-Public Sub ParamCharAdo(ByVal cmd As Object, ByVal name As String, ByVal size As Long, ByVal value As Variant)
-    AddParam cmd, name, adChar, size, value
+Public Sub ParamCharAdo(ByVal cmd As Object, ByVal name As String, ByVal value As Variant, ByVal size As Long)
+    AddParam cmd, adChar, name, value, size
 End Sub
 
 ' Add NCHAR(n) parameter.
-Public Sub ParamNCharAdo(ByVal cmd As Object, ByVal name As String, ByVal size As Long, ByVal value As Variant)
-    AddParam cmd, name, adWChar, size, value
+Public Sub ParamNCharAdo(ByVal cmd As Object, ByVal name As String, ByVal value As Variant, ByVal size As Long)
+    AddParam cmd, adWChar, name, value, size
 End Sub
 
 ' Add VARCHAR(n) parameter.
-Public Sub ParamVarcharAdo(ByVal cmd As Object, ByVal name As String, ByVal size As Long, ByVal value As Variant)
-    AddParam cmd, name, adVarChar, size, value
+Public Sub ParamVarcharAdo(ByVal cmd As Object, ByVal name As String, ByVal value As Variant, ByVal size As Long)
+    AddParam cmd, adVarChar, name, value, size
 End Sub
 
 ' Add NVARCHAR(n) parameter.
-Public Sub ParamNVarcharAdo(ByVal cmd As Object, ByVal name As String, ByVal size As Long, ByVal value As Variant)
-    AddParam cmd, name, adVarWChar, size, value
+Public Sub ParamNVarcharAdo(ByVal cmd As Object, ByVal name As String, ByVal value As Variant, ByVal size As Long)
+    AddParam cmd, adVarWChar, name, value, size
 End Sub
 
 ' Add VARCHAR(MAX) parameter.
 Public Sub ParamVarcharMaxAdo(ByVal cmd As Object, ByVal name As String, ByVal value As Variant)
-    AddParam cmd, name, adLongVarChar, -1, value
+    AddParam cmd, adLongVarChar, name, value, -1
 End Sub
 
 ' Add NVARCHAR(MAX) parameter.
 Public Sub ParamNVarcharMaxAdo(ByVal cmd As Object, ByVal name As String, ByVal value As Variant)
-    AddParam cmd, name, adLongVarWChar, -1, value
+    AddParam cmd, adLongVarWChar, name, value, -1
 End Sub
 
 ' Add DATETIME/TIMESTAMP parameter.
 Public Sub ParamDateTimeAdo(ByVal cmd As Object, ByVal name As String, ByVal value As Variant)
-    AddParam cmd, name, adDBTimeStamp, 0, value
+    AddParam cmd, adDBTimeStamp, name, value
 End Sub
 
 ' Add DATE parameter.
 Public Sub ParamDateAdo(ByVal cmd As Object, ByVal name As String, ByVal value As Variant)
-    AddParam cmd, name, adDBDate, 0, value
+    AddParam cmd, adDBDate, name, value
 End Sub
 
 ' Add TIME parameter.
 Public Sub ParamTimeAdo(ByVal cmd As Object, ByVal name As String, ByVal value As Variant)
-    AddParam cmd, name, adDBTime, 0, value
+    AddParam cmd, adDBTime, name, value
 End Sub
 
 ' Add VARBINARY parameter.
-Public Sub ParamVarBinaryAdo(ByVal cmd As Object, ByVal name As String, ByVal size As Long, ByVal value As Variant)
-    AddParam cmd, name, adVarBinary, size, value
+Public Sub ParamVarBinaryAdo(ByVal cmd As Object, ByVal name As String, ByVal value As Variant, ByVal size As Long)
+    AddParam cmd, adVarBinary, name, value, size
 End Sub
 
 ' Add VARBINARY(MAX) parameter.
 Public Sub ParamVarBinaryMaxAdo(ByVal cmd As Object, ByVal name As String, ByVal value As Variant)
-    AddParam cmd, name, adLongVarBinary, -1, value
+    AddParam cmd, adLongVarBinary, name, value, -1
 End Sub
 
 ' Create and append a parameter safely.
-Private Sub AddParam(ByVal cmd As Object, ByVal name As String, ByVal dataType As Long, ByVal size As Long, ByVal value As Variant)
+Private Sub AddParam(ByVal cmd As Object, ByVal dataType As Long, ByVal name As String, ByVal value As Variant, Optional ByVal size As Long = 0)
     Dim p As Object
 
     If size > 0 Then
