@@ -221,15 +221,15 @@ Public Sub SearchReturnTrackingAdo( _
         Set cmd = CreateCommandAdo(connAdo, sql)
 
         ' (? IS NULL OR ApplicantID = ?)
-        ParamInt4Ado cmd, "@p1", applicantId
-        ParamInt4Ado cmd, "@p2", applicantId
+        ParamInt4Ado cmd, "@applicantId1", applicantId
+        ParamInt4Ado cmd, "@applicantId2", applicantId
 
         ' (? IS NULL OR CtName LIKE ?)
 
         ' ctName column length is 50.
         ' For the ctName LIKE parameter, use a size >= 50; 255 is sufficient.
-        ParamLikeAdo cmd, "@p3", ctName, 255, Db_SQLServer
-        ParamLikeAdo cmd, "@p4", ctName, 255, Db_SQLServer
+        ParamLikeAdo cmd, "@ctName1", ctName, 255, Db_SQLServer
+        ParamLikeAdo cmd, "@ctName2", ctName, 255, Db_SQLServer
     End If
 
     ' Execute Query
