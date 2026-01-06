@@ -9,15 +9,17 @@ Public Function GetDbConString(Optional ByVal timeoutSeconds As Long = 300) As S
     cs.Add "Provider", "MSOLEDBSQL"
     cs.Add "Data Source", "localhost"
     cs.Add "Initial Catalog", "AccessDB"
+
+    ' Keep Integrated Security for Windows Authentication; remove it when using SQL Server Authentication
     cs.Add "Integrated Security", "SSPI"
+    
     cs.Add "Encrypt", "False"
     cs.Add "TrustServerCertificate", "True"
     cs.Add "Connect Timeout", CStr(timeoutSeconds)
 
-    ' SQL Server Authentication
+    ' SQL Server Authentication (use these and remove Integrated Security above)
     ' cs.Add "User ID", "dbuser"
     ' cs.Add "Password", "dbpassword"
-    ' Delete the line: Integrated Security
 
     GetDbConString = cs.Build()
 End Function
@@ -30,6 +32,7 @@ Public Function GetConnection(ByRef cn As Object, Optional ByVal timeoutSeconds 
     If cn Is Nothing Then
         Set cn = CreateObject("ADODB.Connection")
         cn.ConnectionString = GetDbConString(timeoutSeconds)
+        ' Set this only if you want the ADO ConnectionTimeout property enforced in code
         ' cn.ConnectionTimeout = timeoutSeconds
     End If
 
