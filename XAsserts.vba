@@ -1,4 +1,5 @@
 Option Compare Database
+Option Explicit
 
 ' Returns True if the given Variant contains a meaningful value
 Private Function HasValue(ByVal v As Variant) As Boolean
