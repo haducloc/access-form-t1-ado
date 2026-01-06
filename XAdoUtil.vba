@@ -215,8 +215,8 @@ Public Sub ParamLikeAdo( _
     ByVal cmd As Object, _
     ByVal name As String, _
     ByVal value As Variant, _
-    ByVal dbType As XDbType, _
-    Optional ByVal maxLikeSize As Long = 255 _
+    Optional ByVal maxLikeSize As Long = 255, _
+    Optional ByVal dbType As XDbType = XDbType.Db_SQLServer _
 )
     DoParamLikeAdo cmd, adVarChar, name, value, maxLikeSize, dbType
 End Sub
@@ -226,8 +226,8 @@ Public Sub ParamNLikeAdo( _
     ByVal cmd As Object, _
     ByVal name As String, _
     ByVal value As Variant, _
-    ByVal dbType As XDbType, _
-    Optional ByVal maxLikeSize As Long = 255 _
+    Optional ByVal maxLikeSize As Long = 255, _
+    Optional ByVal dbType As XDbType = XDbType.Db_SQLServer _
 )
     DoParamLikeAdo cmd, adVarWChar, name, value, maxLikeSize, dbType
 End Sub

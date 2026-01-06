@@ -228,8 +228,8 @@ Public Sub SearchReturnTrackingAdo( _
 
         ' ctName column length is 50.
         ' For the ctName LIKE parameter, use a size >= 50; 255 is sufficient.
-        ParamLikeAdo cmd, "@p3", ctName, Db_SQLServer, 255
-        ParamLikeAdo cmd, "@p4", ctName, Db_SQLServer, 255
+        ParamLikeAdo cmd, "@p3", ctName, 255, Db_SQLServer
+        ParamLikeAdo cmd, "@p4", ctName, 255, Db_SQLServer
     End If
 
     ' Execute Query
