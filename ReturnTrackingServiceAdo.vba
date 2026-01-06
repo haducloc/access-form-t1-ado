@@ -225,14 +225,11 @@ Public Sub SearchReturnTrackingAdo( _
         ParamInt4Ado cmd, "@p2", applicantId
 
         ' (? IS NULL OR CtName LIKE ?)
-        Dim ctNameLike As Variant
-        ctNameLike = ToLikeParamValue(ctName, Db_SQLServer)
 
         ' ctName column length is 50.
-        ' For the ctName LIKE parameter, use a size greater than 50; 255 is sufficient.
-        
-        ParamVarcharAdo cmd, "@p3", ctNameLike, 255
-        ParamVarcharAdo cmd, "@p4", ctNameLike, 255
+        ' For the ctName LIKE parameter, use a size >= 50; 255 is sufficient.
+        ParamLikeAdo cmd, "@p3", ctName, Db_SQLServer, 255
+        ParamLikeAdo cmd, "@p4", ctName, Db_SQLServer, 255
     End If
 
     ' Execute Query

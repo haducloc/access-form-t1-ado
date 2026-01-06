@@ -210,6 +210,54 @@ Public Sub ParamNVarcharMaxAdo(ByVal cmd As Object, ByVal name As String, ByVal 
     AddParam cmd, adLongVarWChar, name, value, -1
 End Sub
 
+' Adds a VARCHAR LIKE parameter for non-Unicode string searches
+Public Sub ParamLikeAdo( _
+    ByVal cmd As Object, _
+    ByVal name As String, _
+    ByVal value As Variant, _
+    ByVal dbType As XDbType, _
+    Optional ByVal maxLikeSize As Long = 255 _
+)
+    DoParamLikeAdo cmd, adVarChar, name, value, maxLikeSize, dbType
+End Sub
+
+' Adds a NVARCHAR LIKE parameter for Unicode string searches
+Public Sub ParamNLikeAdo( _
+    ByVal cmd As Object, _
+    ByVal name As String, _
+    ByVal value As Variant, _
+    ByVal dbType As XDbType, _
+    Optional ByVal maxLikeSize As Long = 255 _
+)
+    DoParamLikeAdo cmd, adVarWChar, name, value, maxLikeSize, dbType
+End Sub
+
+' Core helper that normalizes, truncates, and applies LIKE formatting before adding the parameter
+Private Sub DoParamLikeAdo( _
+    ByVal cmd As Object, _
+    ByVal adDataType As Long, _
+    ByVal name As String, _
+    ByVal value As Variant, _
+    ByVal maxLikeSize As Long, _
+    ByVal dbType As XDbType _
+)
+    If IsNull(value) Or IsEmpty(value) Then
+        AddParam cmd, adDataType, name, Null, 1
+        Exit Sub
+    End If
+
+    Dim str As String: str = CStr(value)
+
+    If maxLikeSize > 0 And Len(str) > maxLikeSize Then
+        str = Left$(str, maxLikeSize)
+    End If
+
+    Dim likeParamValue As Variant
+    likeParamValue = ToLikeParamValue(str, dbType)
+
+    AddParam cmd, adDataType, name, likeParamValue, Len(CStr(likeParamValue))
+End Sub
+
 ' Add DATETIME/TIMESTAMP parameter.
 Public Sub ParamDateTimeAdo(ByVal cmd As Object, ByVal name As String, ByVal value As Variant)
     AddParam cmd, adDBTimeStamp, name, value
@@ -236,13 +284,13 @@ Public Sub ParamVarBinaryMaxAdo(ByVal cmd As Object, ByVal name As String, ByVal
 End Sub
 
 ' Create and append a parameter safely.
-Private Sub AddParam(ByVal cmd As Object, ByVal dataType As Long, ByVal name As String, ByVal value As Variant, Optional ByVal size As Long = 0)
+Private Sub AddParam(ByVal cmd As Object, ByVal adDataType As Long, ByVal name As String, ByVal value As Variant, Optional ByVal size As Long = 0)
     Dim p As Object
 
     If size > 0 Then
-        Set p = cmd.CreateParameter(name, dataType, adParamInput, size)
+        Set p = cmd.CreateParameter(name, adDataType, adParamInput, size)
     Else
-        Set p = cmd.CreateParameter(name, dataType, adParamInput)
+        Set p = cmd.CreateParameter(name, adDataType, adParamInput)
     End If
 
     If IsNull(value) Or IsEmpty(value) Then
