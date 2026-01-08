@@ -21,7 +21,7 @@ Public Function EncodeValues(ParamArray variants() As Variant) As String
     ReDim parts(LBound(vals) To UBound(vals))
     For i = LBound(vals) To UBound(vals)
         If IsNull(vals(i)) Or IsEmpty(vals(i)) Then
-            parts(i) = vbNullString
+            parts(i) = vbEmptyString
         Else
             parts(i) = CStr(vals(i))
         End If
