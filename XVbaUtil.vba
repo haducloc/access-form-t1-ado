@@ -17,3 +17,7 @@ Public Sub CloseObj(ByRef obj As Object, Optional ByVal closeMethod As String = 
     End If
     On Error GoTo 0
 End Sub
+
+Public Function NewDictionary() As Object
+  Set NewDictionary = CreateObject("Scripting.Dictionary")
+End Function

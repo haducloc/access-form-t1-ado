@@ -304,7 +304,7 @@ End Sub
 
 ' Convert current record in recordset into a Scripting.Dictionary.
 Public Function RecordToDictAdo(ByVal rs As Object) As Object
-    Dim d As Object: Set d = CreateObject("Scripting.Dictionary")
+    Dim d As Object: Set d = NewDictionary()
     Dim i As Long
 
     For i = 0 To rs.Fields.Count - 1
