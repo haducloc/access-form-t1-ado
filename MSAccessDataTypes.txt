@@ -1,0 +1,37 @@
+ACCESS DATABASE DATA TYPES (DAO / SQL)
+
+***** NUMBER
+BYTE - 8-bit integer (0 to 255)
+INTEGER - 16-bit integer
+LONG - 32-bit integer (most common numeric type)
+SINGLE - Single-precision floating point
+DOUBLE - Double-precision floating point
+DECIMAL - Fixed-precision numeric
+GUID - Replication ID (UUID)
+
+***** TEXT
+TEXT(n) - Short text, 1 to 255 characters
+MEMO - Long text (unlimited length, not indexable)
+
+***** DATE / TIME
+DATETIME - Date and time stored together
+
+***** YES / NO
+YESNO - Boolean value (stored internally as 0 / -1)
+
+***** CURRENCY
+CURRENCY - Fixed-point monetary value (4 decimal places)
+
+***** AUTONUMBER (SPECIAL)
+AUTOINCREMENT - Auto-generated LONG value (avoid in temp tables)
+
+***** BINARY (ADVANCED / AVOID IN TEMP TABLES)
+BINARY - OLE Object storage
+VARBINARY - Attachment / binary data (ACE only)
+
+***** NOTES
+
+- Table Design shows "Number" as a category; actual type is defined by Field Size.
+- Prefer LONG over INTEGER unless range is guaranteed small.
+- Avoid AUTOINCREMENT, MEMO, BINARY, VARBINARY in parameterized temp tables.
+- DATETIME always includes both date and time.
