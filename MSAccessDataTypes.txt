@@ -35,3 +35,45 @@ VARBINARY - Attachment / binary data (ACE only)
 - Prefer LONG over INTEGER unless range is guaranteed small.
 - Avoid AUTOINCREMENT, MEMO, BINARY, VARBINARY in parameterized temp tables.
 - DATETIME always includes both date and time.
+
+***** Data Types in Schema Definitions
+
+BYTE             1 byte
+SHORT            2 bytes  -- same as INTEGER
+INTEGER          2 bytes
+LONG             4 bytes
+LONGLONG         8 bytes  -- Large Number (INT64)
+
+SINGLE           4 bytes  -- floating point
+DOUBLE           8 bytes  -- floating point
+DECIMAL          12 bytes -- fixed precision
+NUMERIC          12 bytes -- synonym for DECIMAL
+
+AUTOINCREMENT    4 bytes
+COUNTER          4 bytes  -- synonym
+
+TEXT(n)          -- n = 1–255
+VARCHAR(n)       -- synonym
+CHAR(n)          -- synonym
+
+LONGTEXT         -- same as MEMO
+MEMO             -- legacy name
+
+DATETIME         8 bytes
+DATE             8 bytes  -- synonym
+TIME             8 bytes  -- synonym (stored as DateTime)
+
+YESNO            1 byte   -- Boolean (0 / -1)
+BOOLEAN          1 byte   -- synonym
+
+CURRENCY         8 bytes  -- fixed-point (4 decimals)
+MONEY            8 bytes  -- synonym
+
+GUID             16 bytes
+UNIQUEIDENTIFIER 16 bytes -- synonym
+
+HYPERLINK
+
+BINARY
+VARBINARY
+ATTACHMENT
