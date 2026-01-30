@@ -18,6 +18,17 @@ Public Sub CloseObj(ByRef obj As Object, Optional ByVal closeMethod As String = 
     On Error GoTo 0
 End Sub
 
+Public Function ToXError(ByVal err As VBA.ErrObject) As XError
+    Dim xe As XError
+    Set xe = New XError
+
+    xe.ErrNum = err.Number
+    xe.ErrDesc = err.Description
+    xe.ErrSrc = err.source
+
+    Set ToXError = xe
+End Function
+
 Public Function NewDictionary() As Object
   Set NewDictionary = CreateObject("Scripting.Dictionary")
 End Function
