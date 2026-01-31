@@ -63,7 +63,6 @@ Public Sub InsertTempRowDao(ByVal tableName As String, ByVal fieldsCsv As String
 
 TCError:
     Set xe = ToXError(Err)
-
     CloseObj qd
     Err.Raise xe.ErrNum, xe.ErrSrc, xe.ErrDesc
 End Sub
@@ -94,36 +93,30 @@ Public Function GetTempByIdDao(ByVal tableName As String, ByVal pkField As Strin
     CloseObj rs
     CloseObj qd
 
-    If result Is Nothing Then
-        Set result = NewDictionary()
-    End If
-
     Set GetTempByIdDao = result
     Exit Function
 
 TCError:
     Set xe = ToXError(Err)
-
     CloseObj rs
     CloseObj qd
-
     Err.Raise xe.ErrNum, xe.ErrSrc, xe.ErrDesc
 End Function
 
 ' Convert the current record in a DAO.Recordset into a Dictionary.
 Public Function RecordsetToDictionaryDao(ByVal rs As DAO.Recordset) As Object
-    Dim row As Object
-    Set row = NewDictionary()
-
     If rs Is Nothing Then
-        Set RecordsetToDictionaryDao = row
+        Set RecordsetToDictionaryDao = Nothing
         Exit Function
     End If
 
     If (rs.BOF And rs.EOF) Then
-        Set RecordsetToDictionaryDao = row
+        Set RecordsetToDictionaryDao = Nothing
         Exit Function
     End If
+
+    Dim row As Object
+    Set row = NewDictionary()
 
     Dim f As DAO.Field
     For Each f In rs.Fields
@@ -216,7 +209,6 @@ Private Function NormalizeParamName(ByVal paramName As String) As String
         NormalizeParamName = Mid$(paramName, 2, Len(paramName) - 2)
         Exit Function
     End If
-
     NormalizeParamName = paramName
 End Function
 
@@ -232,4 +224,258 @@ Private Function HasField(ByVal values As Object, ByVal fieldName As String) As 
 
 TCError:
     HasField = False
+End Function
+
+' Create a local Access table from an ADO Recordset and load its data.
+Public Sub CreateTempTableFromAdoRs( _
+    ByVal rs As ADODB.Recordset, _
+    ByVal tableName As String, _
+    Optional ByVal dropIfExists As Boolean = True, _
+    Optional ByVal pkFieldName As String = "" _
+)
+    Dim db As DAO.Database
+    Dim tdf As DAO.TableDef
+    Dim i As Long
+    Dim xe As XError
+
+    On Error GoTo TCError
+
+    If rs Is Nothing Then XRaise "XDaoUtil.CreateTempTableFromAdoRs", "Recordset is Nothing."
+    If rs.State = 0 Then XRaise "XDaoUtil.CreateTempTableFromAdoRs", "Recordset is closed."
+
+    Set db = CurrentDb()
+
+    ' Drop table if it exists
+    If dropIfExists Then
+        On Error Resume Next
+        db.TableDefs.Delete tableName
+        db.TableDefs.Refresh
+        On Error GoTo TCError
+    End If
+
+    ' Define table structure (offline)
+    Set tdf = db.CreateTableDef(tableName)
+
+    For i = 0 To rs.Fields.Count - 1
+        tdf.Fields.Append MapAdoFieldToDaoField(tdf, rs.Fields(i))
+    Next i
+
+    ' Add primary key while TableDef is offline
+    If Len(pkFieldName) > 0 Then
+        If FieldExistsInTdf(tdf, pkFieldName) Then
+            AddPrimaryKey tdf, pkFieldName
+        Else
+            XRaise "XDaoUtil.CreateTempTableFromAdoRs", "PK field not found: " & pkFieldName
+        End If
+    End If
+
+    ' Commit table to database
+    db.TableDefs.Append tdf
+    db.TableDefs.Refresh
+
+    ' Insert data into table
+    InsertAdoRecordsetRows rs, tableName
+
+    Exit Sub
+
+TCError:
+    Set xe = ToXError(Err)
+    Err.Raise xe.ErrNum, xe.ErrSrc, xe.ErrDesc
+End Sub
+
+' Create a DAO Field based on an ADO Field definition.
+Private Function MapAdoFieldToDaoField( _
+    ByVal tdf As DAO.TableDef, _
+    ByVal adoFld As ADODB.Field _
+) As DAO.Field
+
+    Dim daoType As DAO.DataTypeEnum
+    daoType = MapAdoTypeToDaoType(adoFld.Type)
+
+    Select Case daoType
+
+        Case dbText
+            If adoFld.DefinedSize > 0 And adoFld.DefinedSize <= 255 Then
+                Set MapAdoFieldToDaoField = tdf.CreateField(adoFld.Name, dbText, adoFld.DefinedSize)
+            Else
+                Set MapAdoFieldToDaoField = tdf.CreateField(adoFld.Name, dbMemo)
+            End If
+
+        Case dbBinary
+            If adoFld.DefinedSize > 0 And adoFld.DefinedSize <= 255 Then
+                Set MapAdoFieldToDaoField = tdf.CreateField(adoFld.Name, dbBinary, adoFld.DefinedSize)
+            Else
+                Set MapAdoFieldToDaoField = tdf.CreateField(adoFld.Name, dbLongBinary)
+            End If
+
+        Case Else
+            Set MapAdoFieldToDaoField = tdf.CreateField(adoFld.Name, daoType)
+
+    End Select
+End Function
+
+' Map an ADO data type to the closest DAO data type.
+Private Function MapAdoTypeToDaoType(ByVal adoType As ADODB.DataTypeEnum) As DAO.DataTypeEnum
+    Select Case adoType
+        Case adSmallInt:  MapAdoTypeToDaoType = dbInteger
+        Case adInteger:   MapAdoTypeToDaoType = dbLong
+
+        Case adBigInt
+            If SupportsDaoBigInt() Then
+                MapAdoTypeToDaoType = 20 ' dbBigInt
+            Else
+                MapAdoTypeToDaoType = dbDouble
+            End If
+
+        Case adUnsignedTinyInt, adTinyInt
+            MapAdoTypeToDaoType = dbByte
+
+        Case adBoolean
+            MapAdoTypeToDaoType = dbBoolean
+
+        Case adSingle
+            MapAdoTypeToDaoType = dbSingle
+
+        Case adDouble
+            MapAdoTypeToDaoType = dbDouble
+
+        Case adCurrency
+            MapAdoTypeToDaoType = dbCurrency
+
+        Case adDecimal, adNumeric
+            MapAdoTypeToDaoType = dbDouble
+
+        Case adDate, adDBDate, adDBTime, adDBTimeStamp
+            MapAdoTypeToDaoType = dbDate
+
+        Case adVarChar, adWChar, adVarWChar, adChar, adBSTR
+            MapAdoTypeToDaoType = dbText
+
+        Case adLongVarChar, adLongVarWChar
+            MapAdoTypeToDaoType = dbMemo
+
+        Case adBinary, adVarBinary
+            MapAdoTypeToDaoType = dbBinary
+
+        Case adLongVarBinary
+            MapAdoTypeToDaoType = dbLongBinary
+
+        Case Else
+            MapAdoTypeToDaoType = dbText
+    End Select
+End Function
+
+' Detect whether the current Access version supports DAO BigInt.
+Private Function SupportsDaoBigInt() As Boolean
+    On Error GoTo Nope
+    Dim tdf As DAO.TableDef
+    Dim f As DAO.Field
+
+    Set tdf = CurrentDb.CreateTableDef("")
+    Set f = tdf.CreateField("x", 20) ' dbBigInt
+    SupportsDaoBigInt = True
+    Exit Function
+Nope:
+    SupportsDaoBigInt = False
+End Function
+
+' Add a single-field primary key to a TableDef.
+Private Sub AddPrimaryKey(ByRef tdf As DAO.TableDef, ByVal fieldName As String)
+    Dim idx As DAO.Index
+
+    Set idx = tdf.CreateIndex("PK_" & tdf.Name)
+    With idx
+        .Primary = True
+        .Unique = True
+        .Fields.Append .CreateField(fieldName)
+    End With
+
+    tdf.Indexes.Append idx
+End Sub
+
+' Check whether a field exists in a TableDef.
+Private Function FieldExistsInTdf(ByVal tdf As DAO.TableDef, ByVal fieldName As String) As Boolean
+    On Error GoTo Nope
+    Dim f As DAO.Field
+    Set f = tdf.Fields(fieldName)
+    FieldExistsInTdf = True
+    Exit Function
+Nope:
+    FieldExistsInTdf = False
+End Function
+
+' Insert all rows from an ADO Recordset into a local Access table.
+Private Sub InsertAdoRecordsetRows(ByVal rs As ADODB.Recordset, ByVal tableName As String)
+    Dim db As DAO.Database
+    Dim qd As DAO.QueryDef
+    Dim sql As String
+    Dim i As Long
+    Dim rowNum As Long
+    Dim xe As XError
+
+    On Error GoTo TCError
+
+    Set db = CurrentDb()
+
+    sql = "PARAMETERS " & BuildDaoParameters(rs) & vbCrLf & _
+          "INSERT INTO [" & tableName & "] (" & BuildColumnList(rs) & ") " & vbCrLf & _
+          "VALUES (" & BuildParameterPlaceholders(rs) & ");"
+
+    Set qd = db.CreateQueryDef("", sql)
+    qd.ReturnsRecords = False
+
+    db.BeginTrans
+
+    rowNum = 0
+    If Not (rs.BOF And rs.EOF) Then
+        rs.MoveFirst
+        Do While Not rs.EOF
+            rowNum = rowNum + 1
+            For i = 0 To rs.Fields.Count - 1
+                qd.Parameters("p" & i).Value = rs.Fields(i).Value
+            Next i
+            qd.Execute dbFailOnError
+            rs.MoveNext
+        Loop
+    End If
+
+    db.CommitTrans
+    CloseObj qd
+    Exit Sub
+
+TCError:
+    Set xe = ToXError(Err)
+    ' BUG FIX: Wrapped Rollback in On Error Resume Next to prevent secondary crash if transaction never started
+    On Error Resume Next
+    If Not db Is Nothing Then db.Rollback
+    On Error GoTo 0
+    CloseObj qd
+    Err.Raise xe.ErrNum, xe.ErrSrc, "Transfer failed at row " & rowNum & ": " & xe.ErrDesc
+End Sub
+
+' Build a comma-separated list of bracketed column names from a Recordset.
+Private Function BuildColumnList(ByVal rs As ADODB.Recordset) As String
+    Dim i As Long, s As String
+    For i = 0 To rs.Fields.Count - 1
+        s = s & IIf(i > 0, ",", "") & "[" & rs.Fields(i).Name & "]"
+    Next
+    BuildColumnList = s
+End Function
+
+' Build a comma-separated list of parameter placeholders (p0, p1, ...).
+Private Function BuildParameterPlaceholders(ByVal rs As ADODB.Recordset) As String
+    Dim i As Long, s As String
+    For i = 0 To rs.Fields.Count - 1
+        s = s & IIf(i > 0, ",", "") & "[p" & i & "]"
+    Next
+    BuildParameterPlaceholders = s
+End Function
+
+' Build the PARAMETERS clause for the insert QueryDef.
+Private Function BuildDaoParameters(ByVal rs As ADODB.Recordset) As String
+    Dim i As Long, s As String
+    For i = 0 To rs.Fields.Count - 1
+        s = s & IIf(i > 0, ", ", "") & "p" & i & " Variant"
+    Next
+    BuildDaoParameters = s & ";"
 End Function
