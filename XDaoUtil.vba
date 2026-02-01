@@ -4,7 +4,7 @@ Option Explicit
 ' Create temp table if it doesn't exist.
 ' schemaSql example: "[Id] LONG|AUTOINCREMENT NOT NULL, [CtName] TEXT(100) NOT NULL, [ReturnDate1] DATETIME"
 ' pkField example: "Id"
-Public Function CreateTempTableDao( _
+Public Function EnsureTempTableAdo( _
     ByVal tableName As String, _
     ByVal schemaSql As String, _
     Optional ByVal pkField As String = "" _
@@ -14,7 +14,7 @@ Public Function CreateTempTableDao( _
     Set db = CurrentDb
 
     If TableExists(db, tableName) Then
-        CreateTempTableDao = False
+        EnsureTempTableAdo = False
         Exit Function
     End If
 
@@ -33,7 +33,7 @@ Public Function CreateTempTableDao( _
         tdf.Indexes.Refresh
     End If
 
-    CreateTempTableDao = True
+    EnsureTempTableAdo = True
 End Function
 
 ' Clear all rows from the temp table.
@@ -227,10 +227,10 @@ TCError:
 End Function
 
 ' Create a local Access table from an ADO Recordset and load its data.
-Public Sub CreateTempTableFromAdoRs( _
+' Create temp table from ADO RS if missing; otherwise clear it; then load data.
+Public Sub EnsureTempTableFromAdoRs( _
     ByVal rs As ADODB.Recordset, _
     ByVal tableName As String, _
-    Optional ByVal dropIfExists As Boolean = True, _
     Optional ByVal pkFieldName As String = "" _
 )
     Dim db As DAO.Database
@@ -240,42 +240,36 @@ Public Sub CreateTempTableFromAdoRs( _
 
     On Error GoTo TCError
 
-    If rs Is Nothing Then XRaise "XDaoUtil.CreateTempTableFromAdoRs", "Recordset is Nothing."
-    If rs.State = 0 Then XRaise "XDaoUtil.CreateTempTableFromAdoRs", "Recordset is closed."
+    If rs Is Nothing Then XRaise "XDaoUtil.EnsureTempTableFromAdoRs", "Recordset is Nothing."
+    If rs.State = 0 Then XRaise "XDaoUtil.EnsureTempTableFromAdoRs", "Recordset is closed."
 
     Set db = CurrentDb()
 
-    ' Drop table if it exists
-    If dropIfExists Then
-        On Error Resume Next
-        db.TableDefs.Delete tableName
-        db.TableDefs.Refresh
-        On Error GoTo TCError
-    End If
+    If TableExists(db, tableName) Then
+        ' Table exists -> clear
+        db.Execute "DELETE FROM [" & tableName & "];", dbFailOnError
+    Else
+        ' Table missing -> create (offline TableDef then append)
+        Set tdf = db.CreateTableDef(tableName)
 
-    ' Define table structure (offline)
-    Set tdf = db.CreateTableDef(tableName)
+        For i = 0 To rs.Fields.Count - 1
+            tdf.Fields.Append MapAdoFieldToDaoField(tdf, rs.Fields(i))
+        Next i
 
-    For i = 0 To rs.Fields.Count - 1
-        tdf.Fields.Append MapAdoFieldToDaoField(tdf, rs.Fields(i))
-    Next i
-
-    ' Add primary key while TableDef is offline
-    If Len(pkFieldName) > 0 Then
-        If FieldExistsInTdf(tdf, pkFieldName) Then
-            AddPrimaryKey tdf, pkFieldName
-        Else
-            XRaise "XDaoUtil.CreateTempTableFromAdoRs", "PK field not found: " & pkFieldName
+        If Len(pkFieldName) > 0 Then
+            If FieldExistsInTdf(tdf, pkFieldName) Then
+                AddPrimaryKey tdf, pkFieldName
+            Else
+                XRaise "XDaoUtil.EnsureTempTableFromAdoRs", "PK field not found: " & pkFieldName
+            End If
         End If
+
+        db.TableDefs.Append tdf
+        db.TableDefs.Refresh
     End If
 
-    ' Commit table to database
-    db.TableDefs.Append tdf
-    db.TableDefs.Refresh
-
-    ' Insert data into table
+    ' Always load data after ensuring table exists and is empty
     InsertAdoRecordsetRows rs, tableName
-
     Exit Sub
 
 TCError:
